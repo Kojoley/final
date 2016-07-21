@@ -4,7 +4,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <fstream>
-#include <regex>
 #include <boost/log/utility/manipulators/dump.hpp>
 
 
@@ -21,25 +20,16 @@ template <typename Iterator>
 bool parse_request(Iterator const& first, Iterator const& last,
                    std::string & mtd, std::string & url, std::string & ver)
 {
-  /*static const std::regex request_regex("([^\\s]+)\\s+"
-                                        "([^\\s]+)\\s+"
-                                        "HTTP/([\\d\\.]+)");
-  typename std::match_results<Iterator> request_match;
-  if (std::regex_match(first, last, request_match, request_regex)) {
-    mtd = request_match[1];
-    url = request_match[2];
-    ver = request_match[3];
-    return true;
-  }
-  return false;*/
+  const std::string delim(" ");
 
-  std::string delim(" ");
-  auto mtd_last = std::search(first, last, std::begin(delim), std::end(delim));
+  auto mtd_last = std::search(first, last,
+                              std::begin(delim), std::end(delim));
   if (mtd_last == last) {
     return false;
   }
   auto url_first = std::next(mtd_last, 1);
-  auto url_last = std::search(url_first, last, std::begin(delim), std::end(delim));
+  auto url_last = std::search(url_first, last,
+                              std::begin(delim), std::end(delim));
   if (url_last == last) {
     return false;
   }
@@ -77,7 +67,6 @@ void http_connection::send_file(std::string const& url)
     loc = "/index.html";
   }
 
-  //boost::filesystem::path path(loc);
   boost::filesystem::path path(conn_->get_webroot());
   path /= boost::filesystem::path(loc);
 
@@ -95,6 +84,7 @@ void http_connection::send_file(std::string const& url)
   }
 
 #ifdef ENABLE_SEGMENTED_TRANSFER
+  // TODO: Segmented transfer
   auto f = boost::make_shared<std::ifstream>();
   f->open(path.string(), std::ios::binary);
   if (f->is_open()) {
@@ -128,6 +118,13 @@ void http_connection::make_simple_answer(unsigned short code,
   BOOST_LOG_SEV(log_, logging::trace)
     << "Answer: " << code << " " << repl;
 
+  /*Date: Mon, 27 Jul 2009 12:28:53 GMT
+  Server: Apache/2.2.14 (Win32)
+  Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT
+  Content-Length: 88
+  Content-Type: text/html
+  Connection: Closed*/
+
   std::ostringstream ss;
   ss << "HTTP/1.0 " << code << " " << repl << "\r\nConnection: Closed\r\n";
   if (body.size()) {
@@ -144,79 +141,48 @@ void http_connection::make_simple_answer(unsigned short code,
   conn_->do_write_cb(boost::asio::buffer(*buf), [buf](){});
 }
 
-/*Date: Mon, 27 Jul 2009 12:28:53 GMT
-Server: Apache/2.2.14 (Win32)
-Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT
-Content-Length: 88
-Content-Type: text/html
-Connection: Closed*/
-
 template <typename Iterator>
 bool http_connection::process_request(Iterator & first, Iterator const& last)
 {
   auto iter = first;
 
-  /*static const std::regex line_regex("\r\n");
-  std::match_results<Iterator> line_match;*/
   std::string mtd, url, ver;
 
-  //BOOST_LOG_SEV(log_, logging::flood)
-  //  << "line_match.size() == " << line_match.size();
-
   // Iterate over every line
-  std::string delim("\r\n");
+  const std::string delim("\r\n");
   for (std::size_t i = 0; iter != last; ++i) {
     auto found = std::search(iter, last, std::begin(delim), std::end(delim));
-    std::string s(iter, found);
-    //if(std::regex_search(iter, last, line_match, line_regex)) {
-      //auto const& s = line_match.prefix();
-      //auto const& found = s.second;
-      //auto size = std::distance(iter, s.second);
-
-      // Empty line is the marker of the end of headers
-      //if (line_match.prefix().second == iter) {
-      if (iter == found) {
-        auto size = std::distance(found, last) - delim.size();
-        if (size > 0) {
-          BOOST_LOG_SEV(log_, logging::trace)
-            << "Request has body of " << size << " bytes";
-          make_simple_answer(400, "Bad Request",
-                             "I don't understand what you want");
-        }
-        else {
-          send_file(url);
-        }
-        break;
-      }
-
-      // First line is request string, while other is fields
-      if (i == 0) {
-        if (parse_request(iter, found, mtd, url, ver)) {
-          BOOST_LOG_SEV(log_, logging::trace) << "MTD: " << mtd;
-          BOOST_LOG_SEV(log_, logging::trace) << "URL: " << url;
-          BOOST_LOG_SEV(log_, logging::trace) << "VER: " << ver;
-        }
-        else {
-          BOOST_LOG_SEV(log_, logging::error)
-            << "Parsing request failed: " << s;
-          return false;
-        }
+    // Empty line is the marker of the end of headers
+    if (iter == found) {
+      auto size = std::distance(found, last) - delim.size();
+      if (size > 0) {
+        BOOST_LOG_SEV(log_, logging::trace)
+          << "Request has body of " << size << " bytes";
+        make_simple_answer(400, "Bad Request",
+                           "I don't understand what you want");
       }
       else {
-        /*static const std::regex field_regex("([^:\\s]+)\\s*:\\s*(.*)");
-        std::match_results<Iterator> field_match;
-        if (std::regex_match(iter, found, field_match, field_regex)) {
-            //fields.emplace(std::string(field_match[1].first, field_match[1].second),
-            //               std::string(field_match[2].first, field_match[2].second));
-        }
-        else {
-          BOOST_LOG_SEV(log_, logging::error)
-            << "Parsing field failed: " << s;
-          return false;
-        }*/
+        send_file(url);
       }
-      //iter = line_match.suffix().first;
-    //}
+      break;
+    }
+
+    // First line is request string, while other is fields
+    if (i == 0) {
+      if (parse_request(iter, found, mtd, url, ver)) {
+        BOOST_LOG_SEV(log_, logging::trace) << "MTD: " << mtd;
+        BOOST_LOG_SEV(log_, logging::trace) << "URL: " << url;
+        BOOST_LOG_SEV(log_, logging::trace) << "VER: " << ver;
+      }
+      else {
+        BOOST_LOG_SEV(log_, logging::error)
+          << "Parsing request failed";
+        return false;
+      }
+    }
+    else {
+      // TODO: parse fields
+    }
     iter = std::next(found, delim.size());
   }
 
