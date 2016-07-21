@@ -20,15 +20,16 @@ namespace eiptnd {
 void
 init_logging()
 {
-  boost::log::add_common_attributes();
+  /*boost::log::add_common_attributes();
   boost::log::register_simple_formatter_factory<logging::severity_level, char>("Severity");
-  boost::log::register_simple_filter_factory<logging::severity_level, char>("Severity");
+  boost::log::register_simple_filter_factory<logging::severity_level, char>("Severity");*/
 
   boost::log::add_file_log(
     boost::log::keywords::auto_flush = true,
     boost::log::keywords::file_name = "/tmp/log/httpd-%Y-%m-%d_%H-%M-%S.%3N.log",
     boost::log::keywords::format = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%"
   );
+  //boost::log::add_file_log("/tmp/httpd.log");
   boost::log::add_console_log(std::cout);
   /*boost::log::core::get()->set_filter
   (
