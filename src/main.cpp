@@ -4,46 +4,6 @@
 #include <string>
 #include <boost/application.hpp>
 #include <boost/program_options.hpp>
-#include <boost/regex.hpp>
-
-std::size_t expand_env_vars(std::string& original)
-{
-    const boost::regex envscan("%([0-9A-Za-z\\/]*)%");
-    const boost::sregex_iterator end;
-    typedef std::list<std::pair<const std::string,const std::string> > t2StrLst;
-    t2StrLst replacements;
-    for (boost::sregex_iterator rit(original.begin(), original.end(), envscan); rit != end; ++rit)
-        replacements.push_back(std::make_pair((*rit)[0],(*rit)[1]));
-
-    std::size_t cnt = 0;
-    for (t2StrLst::const_iterator lit = replacements.begin(); lit != replacements.end(); ++lit)
-    {
-        const char* expanded = std::getenv(lit->second.c_str());
-        if (expanded == NULL)
-            continue;
-        boost::replace_all(original, lit->first, expanded);
-        ++cnt;
-    }
-
-
-    return cnt;
-}
-
-std::string expand_env_vars(std::string const& original)
-{
-  std::string s = original;
-  expand_env_vars(s);
-  return boost::filesystem::path(s).string();
-}
-
-void expand_env_vars(boost::program_options::variables_map & vm,
-                     boost::program_options::variables_map::key_type const& key)
-{
-  boost::program_options::variable_value & vval = vm.find(key)->second;
-  std::string var = vval.as<std::string>();
-  expand_env_vars(var);
-  vval.value() = var;
-}
 
 int main(int argc, char* argv[])
 {
@@ -108,8 +68,6 @@ int main(int argc, char* argv[])
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
-
-  expand_env_vars(*vm, "dir");
 
   int result = EXIT_SUCCESS;
   boost::system::error_code ec;

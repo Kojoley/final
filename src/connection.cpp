@@ -3,7 +3,6 @@
 #include "core.hpp"
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/utility/manipulators/dump.hpp>

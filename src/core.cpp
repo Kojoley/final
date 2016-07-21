@@ -1,26 +1,16 @@
 #include "core.hpp"
 
 #include "tcp_server.hpp"
-#include "empty_ptree.hpp"
 #include "log.hpp"
 
 #include <boost/bind.hpp>
-#include <boost/foreach.hpp>
-#include <boost/container/flat_set.hpp>
-#include <boost/log/attributes.hpp>
-#include <boost/log/utility/setup/settings.hpp>
-#include <boost/log/utility/setup/from_settings.hpp>
-#include <boost/log/utility/setup/formatter_parser.hpp>
-#include <boost/log/utility/setup/filter_parser.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 namespace eiptnd {
 
 namespace app = boost::application;
 
-void
+/*void
 init_logging()
 {
   namespace attrs = boost::log::attributes;
@@ -39,7 +29,7 @@ init_logging()
   log_settings["Sinks.Console.AutoFlush"] = true;
   log_settings["Sinks.Console.Asynchronous"] = false;
   boost::log::init_from_settings(log_settings);
-}
+}*/
 
 core::core(app::context& context)
   : log_(boost::log::keywords::channel = "core")
@@ -63,7 +53,7 @@ core::operator()()
   int ret = EXIT_SUCCESS;
   bool is_catch = false;
   try {
-    init_logging();
+    //init_logging();
     run();
   }
   catch (...) {
@@ -107,8 +97,8 @@ core::stop()
   is_shutdowning_ = true;
 
   BOOST_LOG_SEV(log_, logging::normal) << "Freeing listeners";
-  BOOST_FOREACH(const boost::weak_ptr<tcp_server>& listener, listeners_) {
-    BOOST_AUTO(p, listener.lock());
+  for (boost::weak_ptr<tcp_server> const& listener : listeners_) {
+    auto p = listener.lock();
     if (p) {
       p->cancel();
     }
@@ -138,7 +128,7 @@ core::run()
   unsigned short port_num = vm_["port"].as<unsigned short>();
 
   try {
-    BOOST_FOREACH(const std::string& address, bind_list) {
+    for(std::string const& address : bind_list) {
       BOOST_LOG_SEV(log_, logging::normal)
         << "TCP listener at " << address << ":" << port_num << " was created";
 

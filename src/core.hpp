@@ -8,7 +8,6 @@
 #include <boost/application/context.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options/variables_map.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 typedef std::vector<std::string> string_vector;
 
@@ -50,9 +49,6 @@ private:
 
   /// Boost.Asio Proactor.
   boost::shared_ptr<boost::asio::io_service> io_service_;
-
-  /// Settings tree.
-  boost::property_tree::ptree settings_;
 
   ///
   std::vector<boost::weak_ptr<tcp_server> > listeners_;
