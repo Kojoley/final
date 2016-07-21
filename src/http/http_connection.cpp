@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 #include <regex>
+#include <boost/log/utility/manipulators/dump.hpp>
 
 
 namespace eiptnd {
@@ -137,6 +138,9 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
   std::match_results<Iterator> line_match;
   std::string mtd, url, ver;
 
+  BOOST_LOG_SEV(log_, logging::flood)
+    << "line_match.size() == " << line_match.size();
+
   // Iterate over every line
   for (std::size_t i = 0; iter != last; ++i) {
     if(std::regex_search(iter, last, line_match, line_regex)) {
@@ -205,6 +209,10 @@ void http_connection::handle_read(std::size_t bytes_transferred)
   auto first = boost::asio::buffers_begin(bufs);
   auto last = boost::asio::buffers_end(bufs);
 
+  std::vector<char> data(first, last);
+  BOOST_LOG_SEV(log_, logging::flood)
+    << "do_read_until(): " << boost::log::dump(data.data(), data.size());
+
 #ifdef ENABLE_HTTP_11_SUPPORT
   if (process_request(first, last)) {
     in_buf_.consume(std::distance(first, last));
@@ -215,7 +223,9 @@ void http_connection::handle_read(std::size_t bytes_transferred)
     conn_.reset();
   }
 #else
-  process_request(first, last);
+  if (!process_request(first, last)) {
+    make_simple_answer(500, "Internal Error", "Whaat?");
+  }
   conn_->close();
   conn_.reset();
 #endif
