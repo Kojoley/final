@@ -134,24 +134,30 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
 {
   auto iter = first;
 
-  static const std::regex line_regex("\r\n");
-  std::match_results<Iterator> line_match;
+  /*static const std::regex line_regex("\r\n");
+  std::match_results<Iterator> line_match;*/
   std::string mtd, url, ver;
 
-  BOOST_LOG_SEV(log_, logging::flood)
-    << "line_match.size() == " << line_match.size();
+  //BOOST_LOG_SEV(log_, logging::flood)
+  //  << "line_match.size() == " << line_match.size();
 
   // Iterate over every line
+  std::string delim("\r\n");
   for (std::size_t i = 0; iter != last; ++i) {
-    if(std::regex_search(iter, last, line_match, line_regex)) {
-      auto const& s = line_match.prefix();
-      auto size = std::distance(iter, s.second);
+    auto found = std::search(iter, last, std::begin(delim), std::end(delim));
+    std::string s(iter, found);
+    //if(std::regex_search(iter, last, line_match, line_regex)) {
+      //auto const& s = line_match.prefix();
+      //auto const& found = s.second;
+      //auto size = std::distance(iter, s.second);
 
       // Empty line is the marker of the end of headers
-      if (line_match.prefix().second == iter) {
+      //if (line_match.prefix().second == iter) {
+      if (iter == found) {
+        auto size = std::distance(found, last) - delim.size();
         if (size > 0) {
           BOOST_LOG_SEV(log_, logging::trace)
-            << "Request has body of " << size << "bytes";
+            << "Request has body of " << size << " bytes";
           make_simple_answer(400, "Bad Request",
                              "I don't understand what you want");
         }
@@ -163,7 +169,7 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
 
       // First line is request string, while other is fields
       if (i == 0) {
-        if (parse_request(iter, s.second, mtd, url, ver)) {
+        if (parse_request(iter, found, mtd, url, ver)) {
           BOOST_LOG_SEV(log_, logging::trace) << "MTD: " << mtd;
           BOOST_LOG_SEV(log_, logging::trace) << "URL: " << url;
           BOOST_LOG_SEV(log_, logging::trace) << "VER: " << ver;
@@ -177,7 +183,7 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
       else {
         static const std::regex field_regex("([^:\\s]+)\\s*:\\s*(.*)");
         std::match_results<Iterator> field_match;
-        if (std::regex_match(iter, s.second, field_match, field_regex)) {
+        if (std::regex_match(iter, found, field_match, field_regex)) {
             //fields.emplace(std::string(field_match[1].first, field_match[1].second),
             //               std::string(field_match[2].first, field_match[2].second));
         }
@@ -187,8 +193,9 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
           return false;
         }
       }
-      iter = line_match.suffix().first;
-    }
+      //iter = line_match.suffix().first;
+    //}
+    iter = std::next(found, delim.size());
   }
 
   first = iter;
