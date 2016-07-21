@@ -44,7 +44,7 @@ bool parse_request(Iterator const& first, Iterator const& last,
     return false;
   }
 
-  auto ver_first = std::next(mtd_last, 1);
+  auto ver_first = std::next(url_last, 1);
   if (ver_first == last) {
     return false;
   }
@@ -203,7 +203,7 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
         }
       }
       else {
-        static const std::regex field_regex("([^:\\s]+)\\s*:\\s*(.*)");
+        /*static const std::regex field_regex("([^:\\s]+)\\s*:\\s*(.*)");
         std::match_results<Iterator> field_match;
         if (std::regex_match(iter, found, field_match, field_regex)) {
             //fields.emplace(std::string(field_match[1].first, field_match[1].second),
@@ -213,7 +213,7 @@ bool http_connection::process_request(Iterator & first, Iterator const& last)
           BOOST_LOG_SEV(log_, logging::error)
             << "Parsing field failed: " << s;
           return false;
-        }
+        }*/
       }
       //iter = line_match.suffix().first;
     //}
