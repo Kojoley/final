@@ -21,7 +21,7 @@ template <typename Iterator>
 bool parse_request(Iterator const& first, Iterator const& last,
                    std::string & mtd, std::string & url, std::string & ver)
 {
-  static const std::regex request_regex("([^\\s]+)\\s+"
+  /*static const std::regex request_regex("([^\\s]+)\\s+"
                                         "([^\\s]+)\\s+"
                                         "HTTP/([\\d\\.]+)");
   typename std::match_results<Iterator> request_match;
@@ -31,7 +31,29 @@ bool parse_request(Iterator const& first, Iterator const& last,
     ver = request_match[3];
     return true;
   }
-  return false;
+  return false;*/
+
+  std::string delim(" ");
+  auto mtd_last = std::search(first, last, std::begin(delim), std::end(delim));
+  if (mtd_last == last) {
+    return false;
+  }
+  auto url_first = std::next(mtd_last, 1);
+  auto url_last = std::search(url_first, last, std::begin(delim), std::end(delim));
+  if (url_last == last) {
+    return false;
+  }
+
+  auto ver_first = std::next(mtd_last, 1);
+  if (ver_first == last) {
+    return false;
+  }
+
+  mtd.assign(first, mtd_last);
+  url.assign(url_first, url_last);
+  ver.assign(ver_first, last);
+
+  return true;
 }
 
 void http_connection::send_file(std::string const& url)
