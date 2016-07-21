@@ -4,10 +4,13 @@
 #include <string>
 #include <boost/application.hpp>
 #include <boost/program_options.hpp>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int main(int argc, char* argv[])
 {
-  //setup_crash_handler();
+  getopt(argc, argv, "h:p:d:");
 
   namespace app = boost::application;
   namespace po = boost::program_options;
