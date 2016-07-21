@@ -15,11 +15,7 @@ class http_connection
   , private boost::noncopyable
 {
 public:
-  http_connection(boost::shared_ptr<connection> connection)
-    : log_(boost::log::keywords::channel = "connection")
-    , conn_(boost::move(connection))
-  {
-  }
+  http_connection(boost::shared_ptr<connection> connection);
 
   void handle_start();
   void handle_read(std::size_t bytes_transferred);

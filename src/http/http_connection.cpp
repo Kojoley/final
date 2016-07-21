@@ -2,11 +2,19 @@
 
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fstream>
 #include <regex>
 
 
 namespace eiptnd {
+
+http_connection::http_connection(boost::shared_ptr<connection> connection)
+  : log_(boost::log::keywords::channel = "http-connection@" +
+        boost::lexical_cast<std::string>(connection->remote_endpoint()))
+  , conn_(boost::move(connection))
+{
+}
 
 template <typename Iterator>
 bool parse_request(Iterator const& first, Iterator const& last,

@@ -36,7 +36,7 @@ init_logging()
   log_settings["Sinks.Console.AutoFlush"] = true;
   log_settings["Sinks.Console.Asynchronous"] = false;
   log_settings["Sinks.File.Destination"] = "TextFile";
-  log_settings["Sinks.File.Target"] = "/tmp";
+  log_settings["Sinks.File.FileName"] = "/tmp/log/httpd-%Y-%m-%d_%H-%M-%S.%3N.log";
   log_settings["Sinks.File.Format"] = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%";
   log_settings["Sinks.File.AutoFlush"] = true;
   log_settings["Sinks.File.Asynchronous"] = false;
