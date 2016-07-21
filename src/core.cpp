@@ -5,18 +5,22 @@
 
 #include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
+#include <boost/log/attributes.hpp>
+#include <boost/log/utility/setup/settings.hpp>
+#include <boost/log/utility/setup/from_settings.hpp>
+#include <boost/log/utility/setup/formatter_parser.hpp>
+#include <boost/log/utility/setup/filter_parser.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
-
 
 namespace eiptnd {
 
 void
 init_logging()
 {
-  boost::log::add_file_log("/tmp/httpd.log");
-  /*namespace attrs = boost::log::attributes;
+  namespace attrs = boost::log::attributes;
 
   BOOST_AUTO(log_core, boost::log::core::get());
   log_core->add_global_attribute("TimeStamp", attrs::local_clock());
@@ -31,7 +35,12 @@ init_logging()
   log_settings["Sinks.Console.Format"] = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%";
   log_settings["Sinks.Console.AutoFlush"] = true;
   log_settings["Sinks.Console.Asynchronous"] = false;
-  boost::log::init_from_settings(log_settings);*/
+  log_settings["Sinks.File.Destination"] = "TextFile";
+  log_settings["Sinks.File.Target"] = "/tmp";
+  log_settings["Sinks.File.Format"] = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%";
+  log_settings["Sinks.File.AutoFlush"] = true;
+  log_settings["Sinks.File.Asynchronous"] = false;
+  boost::log::init_from_settings(log_settings);
 }
 
 core::core(boost::application::context& context)
