@@ -7,20 +7,34 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
-#include <boost/log/attributes.hpp>
-#include <boost/log/utility/setup/settings.hpp>
-#include <boost/log/utility/setup/from_settings.hpp>
-#include <boost/log/utility/setup/formatter_parser.hpp>
-#include <boost/log/utility/setup/filter_parser.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
+//#include <boost/log/trivial.hpp>
+#include <boost/log/keywords/severity.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+
 
 namespace eiptnd {
 
 void
 init_logging()
 {
-  namespace attrs = boost::log::attributes;
+  boost::log::add_common_attributes();
+  boost::log::register_simple_formatter_factory<logging::severity_level, char>("Severity");
+  boost::log::register_simple_filter_factory<logging::severity_level, char>("Severity");
+
+  boost::log::add_file_log(
+    boost::log::keywords::auto_flush = true,
+    boost::log::keywords::file_name = "/tmp/log/httpd-%Y-%m-%d_%H-%M-%S.%3N.log",
+    boost::log::keywords::format = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%"
+  );
+  boost::log::add_console_log(std::cout);
+  /*boost::log::core::get()->set_filter
+  (
+      boost::log::expressions::attr<CustomLogLevels>("Severity")boost::log::keywords::severity >= logging::severity_level::flood
+  );*/
+  /*namespace attrs = boost::log::attributes;
 
   BOOST_AUTO(log_core, boost::log::core::get());
   log_core->add_global_attribute("TimeStamp", attrs::local_clock());
@@ -35,12 +49,7 @@ init_logging()
   log_settings["Sinks.Console.Format"] = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%";
   log_settings["Sinks.Console.AutoFlush"] = true;
   log_settings["Sinks.Console.Asynchronous"] = false;
-  log_settings["Sinks.File.Destination"] = "TextFile";
-  log_settings["Sinks.File.FileName"] = "/tmp/log/httpd-%Y-%m-%d_%H-%M-%S.%3N.log";
-  log_settings["Sinks.File.Format"] = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%";
-  log_settings["Sinks.File.AutoFlush"] = true;
-  log_settings["Sinks.File.Asynchronous"] = false;
-  boost::log::init_from_settings(log_settings);
+  boost::log::init_from_settings(log_settings);*/
 }
 
 core::core(boost::application::context& context)
