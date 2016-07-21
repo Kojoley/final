@@ -41,9 +41,6 @@ private:
   /// Logger instance and attributes.
   logging::logger log_;
 
-  /// Application context.
-  boost::application::context& context_;
-
   /// Variables map.
   boost::program_options::variables_map& vm_;
 

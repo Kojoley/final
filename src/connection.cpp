@@ -2,7 +2,11 @@
 
 #include "core.hpp"
 
+#include <boost/asio/read.hpp>
+#include <boost/asio/read_until.hpp>
+#include <boost/asio/write.hpp>
 #include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/log/attributes.hpp>
 #include <boost/log/utility/manipulators/dump.hpp>

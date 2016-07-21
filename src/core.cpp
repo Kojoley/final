@@ -4,11 +4,12 @@
 #include "log.hpp"
 
 #include <boost/bind.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/thread.hpp>
+
 
 namespace eiptnd {
-
-namespace app = boost::application;
 
 /*void
 init_logging()
@@ -31,9 +32,8 @@ init_logging()
   boost::log::init_from_settings(log_settings);
 }*/
 
-core::core(app::context& context)
+core::core(boost::application::context& context)
   : log_(boost::log::keywords::channel = "core")
-  , context_(context)
   , vm_(*context.find<boost::program_options::variables_map>())
   , webroot_(vm_["dir"].as<std::string>())
   , is_shutdowning_(false)

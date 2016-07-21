@@ -2,6 +2,7 @@
 
 #include <boost/asio/buffers_iterator.hpp>
 #include <boost/filesystem.hpp>
+#include <fstream>
 #include <regex>
 
 
