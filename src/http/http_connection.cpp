@@ -77,7 +77,11 @@ void http_connection::send_file(std::string const& url)
   f.open(path.string(), std::ios::binary);
   if (f.is_open()) {
     std::string content;
-    f >> content;
+    f.seekg(0, std::ios::end);
+    content.reserve(f.tellg());
+    f.seekg(0, std::ios::beg);
+    content.assign(std::istreambuf_iterator<char>(f),
+                   std::istreambuf_iterator<char>());
     make_simple_answer(200, "OK", content);
   }
 #endif

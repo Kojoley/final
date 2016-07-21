@@ -5,16 +5,18 @@
 
 #include <boost/bind.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/log/utility/setup/file.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
 
 
 namespace eiptnd {
 
-/*void
+void
 init_logging()
 {
-  namespace attrs = boost::log::attributes;
+  boost::log::add_file_log("/tmp/httpd.log");
+  /*namespace attrs = boost::log::attributes;
 
   BOOST_AUTO(log_core, boost::log::core::get());
   log_core->add_global_attribute("TimeStamp", attrs::local_clock());
@@ -29,8 +31,8 @@ init_logging()
   log_settings["Sinks.Console.Format"] = "[%TimeStamp%] <%Severity%>\t[%Channel%] - %Message%";
   log_settings["Sinks.Console.AutoFlush"] = true;
   log_settings["Sinks.Console.Asynchronous"] = false;
-  boost::log::init_from_settings(log_settings);
-}*/
+  boost::log::init_from_settings(log_settings);*/
+}
 
 core::core(boost::application::context& context)
   : log_(boost::log::keywords::channel = "core")
@@ -53,7 +55,7 @@ core::operator()()
   int ret = EXIT_SUCCESS;
   bool is_catch = false;
   try {
-    //init_logging();
+    init_logging();
     run();
   }
   catch (...) {
