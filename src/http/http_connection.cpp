@@ -23,7 +23,7 @@ bool parse_request(Iterator const& first, Iterator const& last,
 {
   static const std::regex request_regex("([^\\s]+)\\s+"
                                         "([^\\s]+)\\s+"
-                                        "HTTP/([\\w\\.]+)");
+                                        "HTTP/([\\d\\.]+)");
   typename std::match_results<Iterator> request_match;
   if (std::regex_match(first, last, request_match, request_regex)) {
     mtd = request_match[1];
